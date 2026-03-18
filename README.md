@@ -34,11 +34,11 @@
 
 克隆仓库：
 
-git clone https://github.com/Adminer-2415304346/brown-bear-cross-time-demo.git
+git clone https://github.com/Adminer-2415304346/face-ai-time-demo.git
 
 进入项目目录：
 
-cd brown-bear-cross-time-demo
+cd face-ai-time-demo
 
 4. 安装依赖
 
