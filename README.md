@@ -61,56 +61,8 @@ http://localhost:5173
 
 打开浏览器访问该地址即可。
 
-6. 生产环境打包
 
-执行：
-
-npm run build
-
-打包完成后会生成：
-
-dist/
-
-如果你想本地预览打包结果，可以执行：
-
-npm run preview
-7. 项目目录说明
-src/
-├─ assets/                 # 静态资源
-├─ components/
-│  ├─ common/              # 通用组件
-│  └─ layout/              # 布局组件
-├─ views/
-│  └─ demo/                # 各演示场景页面
-├─ router/                 # 路由
-├─ stores/                 # 状态管理（如后续接入）
-└─ utils/                  # 工具函数
-8. 当前路由说明
-
-主要页面包括：
-
-/demo/intro 问题引入
-
-/demo/dataset 数据集介绍
-
-/demo/preprocess 预处理流程
-
-/demo/model 模型方案
-
-/demo/system 系统演示
-
-/demo/cases 跨时间案例
-
-/demo/metrics 指标结果
-
-/demo/failures 失败案例
-
-/demo/summary 总结
-
-默认首页会跳转到：
-
-/demo/system
-9. 开发说明
+6. 开发说明
 新增页面
 
 将新页面放到：
