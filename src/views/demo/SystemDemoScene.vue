@@ -3,14 +3,23 @@
     <div class="scene-top">
       <div class="scene-heading">
         <div class="scene-eyebrow">System Demo</div>
-        <h2 class="scene-title">跨时间识别系统演示</h2>
+        <h2 class="scene-title">跨时间域生物面部识别系统演示</h2>
         <p class="scene-desc">
-          选择一张测试图像，展示 Top-k 检索结果、身份预测、年份信息和时间阶段判断，
-          用于录制最终演示视频。
+          以非人类生物面部识别为主任务，并通过公开人脸数据集进行迁移验证。
+          当前页面统一展示查询样本、Top-k 检索结果、时间阶段预测与跨时间匹配能力。
         </p>
       </div>
 
       <div class="scene-actions">
+        <a-segmented
+          v-model:value="activeDomain"
+          class="domain-switch"
+          :options="[
+            { label: '非人类生物主任务', value: 'nonhuman' },
+            { label: '人脸迁移验证', value: 'human' }
+          ]"
+        />
+
         <a-segmented
           v-model:value="topK"
           :options="[
@@ -49,13 +58,15 @@
 
       <BaseCard
         title="Current Highlight"
-        subtitle="本页重点强调系统的跨时间检索能力"
+        subtitle="本页重点强调跨时间与跨域泛化能力"
         padding="md"
       >
         <div class="highlight-copy">
-          <div class="highlight-point">跨年份命中历史个体</div>
-          <div class="highlight-point">显式展示预测年份阶段</div>
-          <div class="highlight-point">适合未来时间识别演示</div>
+          <div class="highlight-point">
+            {{ activeDomain === 'nonhuman' ? '非人类生物跨年份个体检索' : '人脸公开数据迁移验证' }}
+          </div>
+          <div class="highlight-point">显式展示时间阶段预测结果</div>
+          <div class="highlight-point">统一检索界面表达主任务与泛化验证</div>
         </div>
       </BaseCard>
     </div>
@@ -75,9 +86,10 @@
               class="query-image"
             />
             <div class="query-badges">
-              <span class="tag tag-dark">{{ currentCase.identity }}</span>
+              <span class="tag tag-dark">{{ currentCase.subjectId }}</span>
               <span class="tag">{{ currentCase.queryYear }}</span>
               <span class="tag">{{ currentCase.stageLabel }}</span>
+              <span class="tag">{{ currentCase.domainLabel }}</span>
             </div>
           </div>
 
@@ -87,12 +99,20 @@
 
             <div class="sample-info-list">
               <div class="info-row">
-                <span>Ground Truth ID</span>
-                <strong>{{ currentCase.identity }}</strong>
+                <span>Domain</span>
+                <strong>{{ currentCase.domainLabel }}</strong>
               </div>
               <div class="info-row">
-                <span>Query Year</span>
-                <strong>{{ currentCase.queryYear }}</strong>
+                <span>Subject ID</span>
+                <strong>{{ currentCase.subjectId }}</strong>
+              </div>
+              <div class="info-row">
+                <span>{{ activeDomain === 'nonhuman' ? 'Species' : 'Dataset' }}</span>
+                <strong>{{ currentCase.source }}</strong>
+              </div>
+              <div class="info-row">
+                <span>Query Year / Stage</span>
+                <strong>{{ currentCase.queryYear }} · {{ currentCase.stageLabel }}</strong>
               </div>
               <div class="info-row">
                 <span>Expected Behavior</span>
@@ -132,7 +152,7 @@
       <BaseCard
         class="results-card"
         title="Top-k Retrieval Results"
-        subtitle="展示最相似的历史个体结果"
+        subtitle="展示最相似的历史候选结果"
         padding="lg"
       >
         <div v-if="!hasStarted" class="empty-state">
@@ -166,7 +186,7 @@
             <div class="result-image-wrap">
               <img
                 :src="item.image"
-                :alt="item.identity"
+                :alt="item.subjectId"
                 class="result-image"
               />
               <span v-if="item.isCorrect" class="result-corner success">
@@ -178,7 +198,9 @@
             </div>
 
             <div class="result-meta">
-              <div class="result-id">{{ item.identity }}</div>
+              <div class="result-id">{{ item.subjectId }}</div>
+              <div class="result-source">{{ item.source }}</div>
+
               <div class="result-year-row">
                 <span>{{ item.year }}</span>
                 <span v-if="item.isCrossTime" class="mini-chip">
@@ -208,8 +230,8 @@
           <div v-else class="summary-panel">
             <div class="summary-main">
               <div class="summary-block">
-                <span class="summary-label">Predicted Identity</span>
-                <strong>{{ prediction.identity }}</strong>
+                <span class="summary-label">Predicted Subject</span>
+                <strong>{{ prediction.subjectId }}</strong>
               </div>
 
               <div class="summary-block">
@@ -225,6 +247,11 @@
               <div class="summary-block">
                 <span class="summary-label">Matched Historical Year</span>
                 <strong>{{ prediction.year }}</strong>
+              </div>
+
+              <div class="summary-block">
+                <span class="summary-label">{{ activeDomain === 'nonhuman' ? 'Species' : 'Validation Dataset' }}</span>
+                <strong>{{ prediction.source }}</strong>
               </div>
             </div>
 
@@ -245,17 +272,23 @@
           padding="lg"
         >
           <div class="narration-copy">
-            <p>
-              当前输入图像来自 <strong>{{ currentCase.queryYear }}</strong> 年，
-              系统在历史图库中检索出最相似的个体结果。
+            <p v-if="activeDomain === 'nonhuman'">
+              当前展示的是 <strong>非人类生物主任务</strong>，样例来源于
+              <strong>{{ currentCase.source }}</strong> 数据。
             </p>
-            <p>
-              可以看到，Top-1 返回的是
-              <strong>{{ prediction.identity || '—' }}</strong>，
-              并同时给出了对应年份与时间阶段预测。
+            <p v-else>
+              当前展示的是 <strong>人脸迁移验证</strong>，样例来源于
+              <strong>{{ currentCase.source }}</strong> 数据集。
             </p>
+
             <p>
-              这个案例强调了：即使跨年份外观变化明显，系统仍能保持较好的匹配能力。
+              输入图像来自 <strong>{{ currentCase.queryYear }}</strong> 年，
+              系统在历史图库中检索出最相似的候选结果，并同步给出时间阶段预测。
+            </p>
+
+            <p>
+              该页面强调：我们的模型不仅面向非人类生物跨时间识别，
+              也可在人脸公开数据上验证其跨时间泛化能力。
             </p>
           </div>
         </BaseCard>
@@ -269,28 +302,33 @@ import { computed, ref, watch } from 'vue'
 import { ScanOutlined } from '@ant-design/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 
-const demoCases = [
+const nonHumanCases = [
   {
-    id: 'case-1',
-    name: 'Case A · Brown Bear #023',
-    identity: 'Bear-023',
+    id: 'nonhuman-1',
+    domain: 'nonhuman',
+    domainLabel: 'Non-human Biometric',
+    name: 'Case A · Brown Bear Subject 023',
+    subjectId: 'NH-023',
+    source: 'Brown Bear Dataset',
     queryYear: 2022,
     stageLabel: 'Late Stage',
     expected: '跨年份 Top-1 命中',
-    description: '同一个体在多年后毛发颜色和姿态均有变化，但仍能在历史图库中完成匹配。',
+    description: '该非人类生物样例展示了多年后毛发、姿态与拍摄条件变化下的个体匹配能力。',
     queryImage: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=900&q=80',
     prediction: {
-      identity: 'Bear-023',
+      subjectId: 'NH-023',
       score: '0.92',
       stage: 'Late Stage',
       year: '2019',
+      source: 'Brown Bear Dataset',
       isCorrect: true,
-      message: '系统成功在不同年份的历史图库中命中同一个体。'
+      message: '系统成功在不同年份的非人类生物图库中命中同一个体。'
     },
     results: [
       {
         image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-023',
+        subjectId: 'NH-023',
+        source: 'Brown Bear Dataset',
         year: 2019,
         score: '0.92',
         isCorrect: true,
@@ -298,7 +336,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-041',
+        subjectId: 'NH-041',
+        source: 'Brown Bear Dataset',
         year: 2020,
         score: '0.81',
         isCorrect: false,
@@ -306,7 +345,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-017',
+        subjectId: 'NH-017',
+        source: 'Brown Bear Dataset',
         year: 2018,
         score: '0.76',
         isCorrect: false,
@@ -314,7 +354,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-102',
+        subjectId: 'NH-102',
+        source: 'Brown Bear Dataset',
         year: 2021,
         score: '0.72',
         isCorrect: false,
@@ -322,7 +363,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-056',
+        subjectId: 'NH-056',
+        source: 'Brown Bear Dataset',
         year: 2017,
         score: '0.69',
         isCorrect: false,
@@ -331,26 +373,31 @@ const demoCases = [
     ]
   },
   {
-    id: 'case-2',
-    name: 'Case B · Brown Bear #011',
-    identity: 'Bear-011',
+    id: 'nonhuman-2',
+    domain: 'nonhuman',
+    domainLabel: 'Non-human Biometric',
+    name: 'Case B · Large Mammal Subject 011',
+    subjectId: 'NH-011',
+    source: 'Large Mammal Dataset',
     queryYear: 2021,
     stageLabel: 'Middle Stage',
     expected: 'Top-5 内稳定命中',
-    description: '该个体存在轻微遮挡和视角变化，系统仍可在前列候选中返回正确身份。',
+    description: '该样例模拟大型哺乳类在遮挡、视角变化下的跨时间候选检索过程。',
     queryImage: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=900&q=80',
     prediction: {
-      identity: 'Bear-011',
+      subjectId: 'NH-011',
       score: '0.87',
       stage: 'Middle Stage',
       year: '2018',
+      source: 'Large Mammal Dataset',
       isCorrect: true,
-      message: '虽然出现遮挡与视角变化，系统仍在候选前列返回正确个体。'
+      message: '虽然存在遮挡与视角变化，系统仍在前列候选中返回正确个体。'
     },
     results: [
       {
         image: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-014',
+        subjectId: 'NH-014',
+        source: 'Large Mammal Dataset',
         year: 2020,
         score: '0.88',
         isCorrect: false,
@@ -358,7 +405,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-011',
+        subjectId: 'NH-011',
+        source: 'Large Mammal Dataset',
         year: 2018,
         score: '0.87',
         isCorrect: true,
@@ -366,7 +414,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-021',
+        subjectId: 'NH-021',
+        source: 'Large Mammal Dataset',
         year: 2021,
         score: '0.79',
         isCorrect: false,
@@ -374,7 +423,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-067',
+        subjectId: 'NH-067',
+        source: 'Large Mammal Dataset',
         year: 2017,
         score: '0.74',
         isCorrect: false,
@@ -382,7 +432,8 @@ const demoCases = [
       },
       {
         image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=800&q=80',
-        identity: 'Bear-045',
+        subjectId: 'NH-045',
+        source: 'Large Mammal Dataset',
         year: 2019,
         score: '0.70',
         isCorrect: false,
@@ -392,18 +443,164 @@ const demoCases = [
   }
 ]
 
-const activeCaseId = ref(demoCases[0].id)
+const humanCases = [
+  {
+    id: 'human-1',
+    domain: 'human',
+    domainLabel: 'Human Transfer Validation',
+    name: 'Case C · Human Face Validation 008',
+    subjectId: 'H-008',
+    source: 'AgeDB',
+    queryYear: 2020,
+    stageLabel: 'Age Shift',
+    expected: '跨年龄阶段 Top-1 命中',
+    description: '该样例用于展示模型在人脸公开数据集上的迁移验证结果，强调跨时间泛化能力。',
+    queryImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80',
+    prediction: {
+      subjectId: 'H-008',
+      score: '0.91',
+      stage: 'Age Shift',
+      year: '2016',
+      source: 'AgeDB',
+      isCorrect: true,
+      message: '模型在人脸公开数据上同样能够保持较好的跨时间匹配效果。'
+    },
+    results: [
+      {
+        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-008',
+        source: 'AgeDB',
+        year: 2016,
+        score: '0.91',
+        isCorrect: true,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-021',
+        source: 'AgeDB',
+        year: 2018,
+        score: '0.82',
+        isCorrect: false,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-046',
+        source: 'AgeDB',
+        year: 2020,
+        score: '0.77',
+        isCorrect: false,
+        isCrossTime: false
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-052',
+        source: 'AgeDB',
+        year: 2017,
+        score: '0.73',
+        isCorrect: false,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-031',
+        source: 'AgeDB',
+        year: 2019,
+        score: '0.69',
+        isCorrect: false,
+        isCrossTime: true
+      }
+    ]
+  },
+  {
+    id: 'human-2',
+    domain: 'human',
+    domainLabel: 'Human Transfer Validation',
+    name: 'Case D · Human Face Validation 021',
+    subjectId: 'H-021',
+    source: 'CACD / FG-NET',
+    queryYear: 2019,
+    stageLabel: 'Temporal Shift',
+    expected: 'Top-5 内保持稳定',
+    description: '该样例模拟模型在人脸公开数据集上的跨时间迁移检索过程。',
+    queryImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
+    prediction: {
+      subjectId: 'H-021',
+      score: '0.86',
+      stage: 'Temporal Shift',
+      year: '2014',
+      source: 'CACD / FG-NET',
+      isCorrect: true,
+      message: '模型在人脸迁移验证集上保持了较稳定的识别表现。'
+    },
+    results: [
+      {
+        image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-018',
+        source: 'CACD / FG-NET',
+        year: 2018,
+        score: '0.87',
+        isCorrect: false,
+        isCrossTime: false
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-021',
+        source: 'CACD / FG-NET',
+        year: 2014,
+        score: '0.86',
+        isCorrect: true,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-041',
+        source: 'CACD / FG-NET',
+        year: 2016,
+        score: '0.79',
+        isCorrect: false,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-063',
+        source: 'CACD / FG-NET',
+        year: 2017,
+        score: '0.74',
+        isCorrect: false,
+        isCrossTime: true
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
+        subjectId: 'H-005',
+        source: 'CACD / FG-NET',
+        year: 2015,
+        score: '0.71',
+        isCorrect: false,
+        isCrossTime: true
+      }
+    ]
+  }
+]
+
+const activeDomain = ref('nonhuman')
+const activeCaseId = ref(nonHumanCases[0].id)
 const isRunning = ref(false)
 const hasStarted = ref(false)
 const hasResult = ref(false)
 const topK = ref(5)
 
+const currentCaseList = computed(() => {
+  return activeDomain.value === 'nonhuman' ? nonHumanCases : humanCases
+})
+
 const currentCase = computed(() => {
-  return demoCases.find(item => item.id === activeCaseId.value) || demoCases[0]
+  return currentCaseList.value.find(item => item.id === activeCaseId.value) || currentCaseList.value[0]
 })
 
 const caseOptions = computed(() => {
-  return demoCases.map(item => ({
+  return currentCaseList.value.map(item => ({
     label: item.name,
     value: item.id
   }))
@@ -414,9 +611,7 @@ const visibleResults = computed(() => {
 })
 
 const prediction = computed(() => {
-  if (!hasResult.value) {
-    return {}
-  }
+  if (!hasResult.value) return {}
   return currentCase.value.prediction
 })
 
@@ -438,6 +633,11 @@ const runDemo = () => {
 }
 
 watch(activeCaseId, () => {
+  resetDemo()
+})
+
+watch(activeDomain, (domain) => {
+  activeCaseId.value = domain === 'nonhuman' ? nonHumanCases[0].id : humanCases[0].id
   resetDemo()
 })
 </script>
@@ -479,10 +679,23 @@ watch(activeCaseId, () => {
 
 .scene-desc {
   margin: 10px 0 0;
-  max-width: 720px;
+  max-width: 760px;
   font-size: 14px;
   line-height: 1.7;
   color: #64748b;
+}
+
+.scene-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.domain-switch {
+  width: fit-content;
+  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .overview-grid {
@@ -633,6 +846,7 @@ watch(activeCaseId, () => {
 .info-row strong {
   font-size: 13px;
   color: #0f172a;
+  text-align: right;
 }
 
 .selector-wrap {
@@ -787,8 +1001,14 @@ watch(activeCaseId, () => {
   color: #0f172a;
 }
 
+.result-source {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
 .result-year-row {
-  margin-top: 6px;
+  margin-top: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -935,6 +1155,15 @@ watch(activeCaseId, () => {
 
   .scene-title {
     font-size: 24px;
+  }
+
+  .scene-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .domain-switch {
+    min-width: 0;
   }
 
   .results-grid,

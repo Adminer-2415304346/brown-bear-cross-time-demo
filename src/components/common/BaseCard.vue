@@ -58,7 +58,7 @@ const props = defineProps({
   },
   padding: {
     type: String,
-    default: 'md' // sm | md | lg
+    default: 'md'
   },
   hoverable: {
     type: Boolean,

@@ -11,8 +11,8 @@
       <div class="logo">
         <div class="logo-mark">B</div>
         <div v-if="!collapsed" class="logo-copy">
-          <strong>Bear ID Demo</strong>
-          <span>Cross-Time Recognition System</span>
+          <strong>BioFace Demo</strong>
+          <span>Cross-Time Recognition Console</span>
         </div>
       </div>
 
@@ -75,8 +75,8 @@
 
       <div v-if="!collapsed" class="sider-footer">
         <div class="footer-card">
-          <span class="footer-label">Recording Mode</span>
-          <strong>Ready</strong>
+          <span class="footer-label">Competition</span>
+          <strong>2026 A31 Demo Ready</strong>
         </div>
       </div>
     </a-layout-sider>
@@ -94,9 +94,9 @@
           </button>
 
           <div class="title-wrap">
-            <div class="title">Cross-Time Brown Bear Recognition</div>
+            <div class="title">跨时间域生物面部识别技术</div>
             <div class="subtitle">
-              Data · Model · Result · System demonstration workspace
+              Non-human biometrics as primary task, human face as transfer validation
             </div>
           </div>
         </div>
@@ -107,10 +107,10 @@
             Demo Ready
           </div>
 
-          <!-- <div class="meta-chip">
+          <div class="meta-chip">
             <play-circle-outlined />
-            4–6 min Script
-          </div> -->
+            2026 服创赛 A31
+          </div>
 
           <div class="user-card">
             <a-avatar class="user-avatar">D</a-avatar>
@@ -402,7 +402,7 @@ const menuClick = ({ key }) => {
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
 }
 
-/* .meta-chip {
+.meta-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -414,7 +414,7 @@ const menuClick = ({ key }) => {
   color: #334155;
   font-size: 13px;
   font-weight: 600;
-} */
+}
 
 .user-card {
   display: flex;
