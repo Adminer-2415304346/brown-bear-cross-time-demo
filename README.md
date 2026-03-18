@@ -34,14 +34,11 @@
 
 克隆仓库：
 
-git clone https://github.com/你的用户名/你的仓库名.git
+git clone https://github.com/Adminer-2415304346/brown-bear-cross-time-demo.git
 
 进入项目目录：
 
-cd 你的仓库名
-
-GitHub 官方文档说明，克隆仓库会在本地创建远程仓库的副本，便于继续开发和提交更改。
-参考 GitHub Docs：Cloning a repository
+cd brown-bear-cross-time-demo
 
 4. 安装依赖
 
