@@ -33,7 +33,7 @@
     <div class="overview-grid">
       <BaseCard
         title="Demo Flow"
-        subtitle="适合录屏的稳定演示路径"
+        subtitle="演示路径"
         padding="md"
       >
         <div class="flow-row">
@@ -269,8 +269,7 @@
         </BaseCard>
 
         <BaseCard
-          title="Narration Tip"
-          subtitle="录制视频时可直接口播"
+          title="Brief Description"
           padding="lg"
         >
           <div class="narration-copy">
@@ -286,11 +285,6 @@
             <p>
               输入图像来自 <strong>{{ currentCase.queryYear }}</strong> 年，
               系统在历史图库中检索出最相似的候选结果，并同步给出时间阶段预测。
-            </p>
-
-            <p>
-              该页面强调：我们的模型不仅面向非人类生物跨时间识别，
-              也可在人脸公开数据上验证其跨时间泛化能力。
             </p>
           </div>
         </BaseCard>

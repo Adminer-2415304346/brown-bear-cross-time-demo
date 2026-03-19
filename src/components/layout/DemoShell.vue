@@ -94,7 +94,7 @@
           </button>
 
           <div class="title-wrap">
-            <div class="title">跨时间域生物面部识别技术</div>
+            <div class="title">跨时间域生物面部识别技术展示平台</div>
             <div class="subtitle">
               Non-human biometrics as primary task, human face as transfer validation
             </div>
@@ -107,10 +107,10 @@
             Demo Ready
           </div>
 
-          <div class="meta-chip">
+          <!-- <div class="meta-chip">
             <play-circle-outlined />
             2026 服创赛 A31
-          </div>
+          </div> -->
 
           <div class="user-card">
             <a-avatar class="user-avatar">D</a-avatar>
@@ -403,7 +403,7 @@ const menuClick = ({ key }) => {
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
 }
 
-.meta-chip {
+/* .meta-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -415,7 +415,7 @@ const menuClick = ({ key }) => {
   color: #334155;
   font-size: 13px;
   font-weight: 600;
-}
+} */
 
 .user-card {
   display: flex;
