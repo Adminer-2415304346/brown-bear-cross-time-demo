@@ -1,4 +1,4 @@
-# Brown Bear Cross-Time Recognition Demo
+# Face AI-Time Recognition Demo
 
 一个基于 Vue 3 + Vite + Ant Design Vue 的科研演示前端项目，用于展示“跨时间个体识别”任务，包括数据、模型、系统检索结果与案例演示。
 
@@ -34,11 +34,11 @@
 
 克隆仓库：
 
-git clone https://github.com/Adminer-2415304346/brown-bear-cross-time-demo.git
+git clone https://github.com/Adminer-2415304346/face-ai-time-demo.git
 
 进入项目目录：
 
-cd brown-bear-cross-time-demo
+cd face-ai-time-demo
 
 4. 安装依赖
 
