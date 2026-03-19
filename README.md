@@ -160,3 +160,4 @@ project-root/
 ├─ package-lock.json # npm 锁定文件
 ├─ vite.config.js # Vite 配置文件
 └─ README.md # 项目说明文档
+---
