@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DemoShell from '@/components/layout/DemoShell.vue'
 import IntroScene from '@/views/demo/IntroScene.vue'
 import DatasetScene from '@/views/demo/DatasetScene.vue'
+import PreprocessScene from '@/views/demo/PreprocessScene.vue'
+import ModelScene from '@/views/demo/ModelScene.vue'
 import SystemDemoScene from '@/views/demo/SystemDemoScene.vue'
 
 const PlaceholderScene = {
@@ -41,12 +43,12 @@ const routes = [
       {
         path: 'preprocess',
         name: 'DemoPreprocess',
-        component: PlaceholderScene
+        component: PreprocessScene
       },
       {
         path: 'model',
         name: 'DemoModel',
-        component: PlaceholderScene
+        component: ModelScene
       },
       {
         path: 'system',

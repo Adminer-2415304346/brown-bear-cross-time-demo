@@ -11,8 +11,8 @@
       <div class="logo">
         <div class="logo-mark">B</div>
         <div v-if="!collapsed" class="logo-copy">
-          <strong>BioFace Demo</strong>
-          <span>Cross-Time Recognition Console</span>
+          <strong>TimeFace Demo</strong>
+          <span>Cross-Time Biometric Console</span>
         </div>
       </div>
 
@@ -96,7 +96,7 @@
           <div class="title-wrap">
             <div class="title">跨时间域生物面部识别技术展示平台</div>
             <div class="subtitle">
-              Non-human biometrics as primary task, human face as transfer validation
+              Identity Recognition · Time Stage Prediction · Temporal Consistency Modeling 
             </div>
           </div>
         </div>
