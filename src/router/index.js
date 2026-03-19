@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DemoShell from '@/components/layout/DemoShell.vue'
+import IntroScene from '@/views/demo/IntroScene.vue'
+import DatasetScene from '@/views/demo/DatasetScene.vue'
 import SystemDemoScene from '@/views/demo/SystemDemoScene.vue'
 
 const PlaceholderScene = {
@@ -16,7 +18,7 @@ const PlaceholderScene = {
 const routes = [
   {
     path: '/',
-    redirect: '/demo/system'
+    redirect: '/demo/intro'
   },
   {
     path: '/demo',
@@ -24,17 +26,17 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/demo/system'
+        redirect: '/demo/intro'
       },
       {
         path: 'intro',
         name: 'DemoIntro',
-        component: PlaceholderScene
+        component: IntroScene
       },
       {
         path: 'dataset',
         name: 'DemoDataset',
-        component: PlaceholderScene
+        component: DatasetScene
       },
       {
         path: 'preprocess',
@@ -75,13 +77,11 @@ const routes = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/demo/system'
+    redirect: '/demo/intro'
   }
 ]
 
-const router = createRouter({
+export default createRouter({
   history: createWebHistory(),
   routes
 })
-
-export default router
