@@ -1,91 +1,45 @@
-<template>
+﻿<template>
   <div class="system-scene">
     <div class="scene-top">
       <div class="scene-heading">
-        <div class="scene-eyebrow">System Demo</div>
-        <h2 class="scene-title">跨时间域生物面部识别系统演示</h2>
+        <div class="scene-eyebrow">系统演示</div>
+        <h2 class="scene-title">跨时间识别系统演示台</h2>
         <p class="scene-desc">
-          以非人类生物面部识别为主任务，并通过公开人脸数据集进行迁移验证。
-          当前页面统一展示查询样本、Top-k 检索结果、时间阶段预测与跨时间匹配能力。
+          本页统一演示查询样本选择、检索结果展示以及最终时间解释过程，
+          同时覆盖主任务与人脸迁移验证两种场景。
         </p>
       </div>
 
       <div class="scene-actions">
-        <a-segmented
-          v-model:value="activeDomain"
-          class="domain-switch"
-          :options="[
-            { label: '非人类生物主任务', value: 'nonhuman' },
-            { label: '人脸迁移验证', value: 'human' }
-          ]"
-        />
-
-        <a-segmented
-          v-model:value="topK"
-          :options="[
-            { label: 'Top-3', value: 3 },
-            { label: 'Top-5', value: 5 }
-          ]"
-        />
+        <a-segmented v-model:value="activeDomain" class="domain-switch" :options="domainOptions" />
+        <a-segmented v-model:value="topK" :options="topKOptions" />
       </div>
     </div>
 
     <div class="overview-grid">
-      <BaseCard
-        title="Demo Flow"
-        subtitle="演示路径"
-        padding="md"
-      >
+      <BaseCard title="演示流程" subtitle="本页的展示路径" padding="md">
         <div class="flow-row">
-          <div class="flow-step">
-            <span>01</span>
-            选择测试样本
-          </div>
-          <div class="flow-step">
-            <span>02</span>
-            启动检索
-          </div>
-          <div class="flow-step">
-            <span>03</span>
-            展示 Top-k
-          </div>
-          <div class="flow-step">
-            <span>04</span>
-            输出预测结论
-          </div>
+          <div class="flow-step"><span>01</span>选择查询样本</div>
+          <div class="flow-step"><span>02</span>启动检索</div>
+          <div class="flow-step"><span>03</span>查看 Top-K</div>
+          <div class="flow-step"><span>04</span>输出结论</div>
         </div>
       </BaseCard>
 
-      <BaseCard
-        title="Current Highlight"
-        subtitle="本页重点强调跨时间与跨域泛化能力"
-        padding="md"
-      >
+      <BaseCard title="当前重点" subtitle="本页当前强调的能力" padding="md">
         <div class="highlight-copy">
-          <div class="highlight-point">
-            {{ activeDomain === 'nonhuman' ? '非人类生物跨年份个体检索' : '人脸公开数据迁移验证' }}
-          </div>
-          <div class="highlight-point">显式展示时间阶段预测结果</div>
-          <div class="highlight-point">统一检索界面表达主任务与泛化验证</div>
+          <div class="highlight-point">{{ currentDomain.label }}</div>
+          <div class="highlight-point">Top-K 检索与时间阶段解释</div>
+          <div class="highlight-point">统一展示主任务与验证场景</div>
         </div>
       </BaseCard>
     </div>
 
     <div class="main-grid">
-      <BaseCard
-        class="query-card"
-        title="Query Sample"
-        subtitle="输入测试图像并控制检索流程"
-        padding="lg"
-      >
+      <BaseCard class="query-card" title="查询样本" subtitle="控制检索流程" padding="lg">
         <div class="query-panel">
           <div class="query-preview">
-            <!-- TODO(real-data): Replace the demo query image source with a real local/file-service image field. -->
-            <img
-              :src="currentCase.queryImage"
-              :alt="currentCase.name"
-              class="query-image"
-            />
+            <img :src="currentCase.queryImage" :alt="currentCase.name" class="query-image" />
             <div class="query-badges">
               <span class="tag tag-dark">{{ currentCase.subjectId }}</span>
               <span class="tag">{{ currentCase.queryYear }}</span>
@@ -94,82 +48,31 @@
             </div>
           </div>
 
-          <div class="query-meta">
-            <div class="sample-title">{{ currentCase.name }}</div>
-            <div class="sample-desc">{{ currentCase.description }}</div>
+          <div class="sample-title">{{ currentCase.name }}</div>
+          <div class="sample-desc">{{ currentCase.description }}</div>
 
-            <div class="sample-info-list">
-              <div class="info-row">
-                <span>Domain</span>
-                <strong>{{ currentCase.domainLabel }}</strong>
-              </div>
-              <div class="info-row">
-                <span>Subject ID</span>
-                <strong>{{ currentCase.subjectId }}</strong>
-              </div>
-              <div class="info-row">
-                <span>{{ activeDomain === 'nonhuman' ? 'Species' : 'Dataset' }}</span>
-                <strong>{{ currentCase.source }}</strong>
-              </div>
-              <div class="info-row">
-                <span>Query Year / Stage</span>
-                <strong>{{ currentCase.queryYear }} · {{ currentCase.stageLabel }}</strong>
-              </div>
-              <div class="info-row">
-                <span>Expected Behavior</span>
-                <strong>{{ currentCase.expected }}</strong>
-              </div>
-            </div>
+          <div class="sample-info-list">
+            <div class="info-row"><span>任务</span><strong>{{ currentCase.domainLabel }}</strong></div>
+            <div class="info-row"><span>来源</span><strong>{{ currentCase.source }}</strong></div>
+            <div class="info-row"><span>查询阶段</span><strong>{{ currentCase.stageLabel }}</strong></div>
+            <div class="info-row"><span>预期表现</span><strong>{{ currentCase.expected }}</strong></div>
+          </div>
 
-            <div class="selector-wrap">
-              <div class="selector-label">切换演示样本</div>
-              <a-select
-                v-model:value="activeCaseId"
-                class="sample-select"
-                size="large"
-                :options="caseOptions"
-              />
-            </div>
+          <div class="selector-wrap">
+            <div class="selector-label">演示样本</div>
+            <a-select v-model:value="activeCaseId" class="sample-select" size="large" :options="caseOptions" />
+          </div>
 
-            <div class="action-row">
-              <a-button
-                type="primary"
-                size="large"
-                class="run-btn"
-                :loading="isRunning"
-                @click="runDemo"
-              >
-                开始识别
-              </a-button>
-
-              <a-button size="large" @click="resetDemo">
-                重置结果
-              </a-button>
-            </div>
+          <div class="action-row">
+            <a-button type="primary" class="run-btn" size="large" @click="runDemo">启动检索</a-button>
           </div>
         </div>
       </BaseCard>
 
-      <BaseCard
-        class="results-card"
-        title="Top-k Retrieval Results"
-        subtitle="展示最相似的历史候选结果"
-        padding="lg"
-      >
-        <div v-if="!hasStarted" class="empty-state">
-          <scan-outlined class="empty-icon" />
-          <div class="empty-title">等待开始演示</div>
-          <div class="empty-desc">
-            点击左侧“开始识别”后，将模拟展示系统输出结果。
-          </div>
-        </div>
-
-        <div v-else-if="isRunning" class="loading-state">
-          <a-spin size="large" />
-          <div class="loading-title">模型分析中...</div>
-          <div class="loading-desc">
-            正在提取特征、执行跨时间检索并生成预测结果
-          </div>
+      <BaseCard title="检索结果" subtitle="当前查询样本的 Top 候选结果" padding="lg">
+        <div v-if="!hasRun" class="empty-state">
+          <div class="empty-title">等待执行</div>
+          <div class="empty-desc">请选择一个样本并点击按钮，模拟检索过程。</div>
         </div>
 
         <div v-else class="results-grid">
@@ -177,115 +80,51 @@
             v-for="(item, index) in visibleResults"
             :key="`${currentCase.id}-${index}`"
             class="result-item"
-            :class="{
-              'result-item--correct': item.isCorrect,
-              'result-item--cross': item.isCrossTime
-            }"
+            :class="{ 'result-item--correct': item.correct, 'result-item--cross': item.crossStage }"
           >
-            <div class="result-rank">Top {{ index + 1 }}</div>
-
+            <div class="result-rank">#{{ index + 1 }}</div>
             <div class="result-image-wrap">
-              <!-- TODO(real-data): Replace the demo retrieval image source with the real matched sample image field. -->
-              <img
-                :src="item.image"
-                :alt="item.subjectId"
-                class="result-image"
-              />
-              <span v-if="item.isCorrect" class="result-corner success">
-                Match
-              </span>
-              <span v-else class="result-corner neutral">
-                Candidate
-              </span>
+              <img :src="item.image" :alt="item.id" class="result-image" />
+              <div class="result-corner" :class="item.correct ? 'success' : 'neutral'">
+                {{ item.correct ? '命中' : '候选' }}
+              </div>
             </div>
 
             <div class="result-meta">
-              <div class="result-id">{{ item.subjectId }}</div>
+              <div class="result-id">{{ item.id }}</div>
               <div class="result-source">{{ item.source }}</div>
-
               <div class="result-year-row">
-                <span>{{ item.year }}</span>
-                <span v-if="item.isCrossTime" class="mini-chip">
-                  Cross-Time
-                </span>
+                <span class="mini-chip">{{ item.year }}</span>
+                <span class="mini-chip">{{ item.stage }}</span>
               </div>
-
-              <div class="score-line">
-                <span>Similarity</span>
-                <strong>{{ item.score }}</strong>
-              </div>
+              <div class="score-line"><span>相似度</span><strong>{{ item.score }}</strong></div>
             </div>
           </div>
         </div>
       </BaseCard>
 
       <div class="side-column">
-        <BaseCard
-          title="Prediction Summary"
-          subtitle="聚合展示最终系统判断"
-          padding="lg"
-        >
-          <div v-if="!hasResult" class="summary-empty">
-            结果将在识别完成后显示。
-          </div>
+        <BaseCard title="结果总结" subtitle="当前检索的主要解释" padding="lg">
+          <div v-if="!hasRun" class="summary-empty">请先运行演示，查看最终解释结果。</div>
 
           <div v-else class="summary-panel">
             <div class="summary-main">
-              <div class="summary-block">
-                <span class="summary-label">Predicted Subject</span>
-                <strong>{{ prediction.subjectId }}</strong>
-              </div>
-
-              <div class="summary-block">
-                <span class="summary-label">Top-1 Score</span>
-                <strong>{{ prediction.score }}</strong>
-              </div>
-
-              <div class="summary-block">
-                <span class="summary-label">Predicted Time Stage</span>
-                <strong>{{ prediction.stage }}</strong>
-              </div>
-
-              <div class="summary-block">
-                <span class="summary-label">Matched Historical Year</span>
-                <strong>{{ prediction.year }}</strong>
-              </div>
-
-              <div class="summary-block">
-                <span class="summary-label">{{ activeDomain === 'nonhuman' ? 'Species' : 'Validation Dataset' }}</span>
-                <strong>{{ prediction.source }}</strong>
-              </div>
+              <div class="summary-block"><span class="summary-label">预测身份</span><strong>{{ summary.identity }}</strong></div>
+              <div class="summary-block"><span class="summary-label">预测阶段</span><strong>{{ summary.stage }}</strong></div>
+              <div class="summary-block"><span class="summary-label">结果观察</span><strong>{{ summary.observation }}</strong></div>
             </div>
 
-            <div class="judge-box" :class="{ success: prediction.isCorrect }">
-              <div class="judge-title">
-                {{ prediction.isCorrect ? '识别成功' : '识别失败' }}
-              </div>
-              <div class="judge-desc">
-                {{ prediction.message }}
-              </div>
+            <div class="judge-box" :class="{ success: summary.success }">
+              <div class="judge-title">{{ summary.success ? '演示成功' : '需要复核' }}</div>
+              <div class="judge-desc">{{ summary.message }}</div>
             </div>
           </div>
         </BaseCard>
 
-        <BaseCard
-          title="Brief Description"
-          padding="lg"
-        >
+        <BaseCard title="讲解提示" subtitle="适合演示时的简短说明" padding="lg">
           <div class="narration-copy">
-            <p v-if="activeDomain === 'nonhuman'">
-              当前展示的是 <strong>非人类生物主任务</strong>，样例来源于
-              <strong>{{ currentCase.source }}</strong> 数据。
-            </p>
-            <p v-else>
-              当前展示的是 <strong>人脸迁移验证</strong>，样例来源于
-              <strong>{{ currentCase.source }}</strong> 数据集。
-            </p>
-
-            <p>
-              输入图像来自 <strong>{{ currentCase.queryYear }}</strong> 年，
-              系统在历史图库中检索出最相似的候选结果，并同步给出时间阶段预测。
-            </p>
+            <p>系统先接收一个查询样本，随后完成 Top-K 检索，并输出身份一致性与时间阶段解释。</p>
+            <p>这样展示的不仅是谁，还包括这个样本在跨时间识别场景中的表现。</p>
           </div>
         </BaseCard>
       </div>
@@ -295,430 +134,223 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { ScanOutlined } from '@ant-design/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 
-// TODO(real-data): Replace all mock cases below with real API/local dataset records.
-// queryImage and results[].image are the current demo photo placeholders.
+const domainOptions = [
+  { label: '非人类生物主任务', value: 'nonhuman' },
+  { label: '人脸迁移验证', value: 'human' }
+]
+
+const topKOptions = [
+  { label: 'Top-3', value: 3 },
+  { label: 'Top-5', value: 5 }
+]
+
+const domainMeta = {
+  nonhuman: { label: '非人类生物跨时间检索' },
+  human: { label: '人脸迁移验证检索' }
+}
+
 const nonHumanCases = [
   {
-    id: 'nonhuman-1',
-    domain: 'nonhuman',
-    domainLabel: 'Non-human Biometric',
-    name: 'Case A · Brown Bear Subject 023',
+    id: 'demo-nh-1',
+    name: '棕熊查询样本 A',
     subjectId: 'NH-023',
-    source: 'Brown Bear Dataset',
-    queryYear: 2022,
-    stageLabel: 'Late Stage',
-    expected: '跨年份 Top-1 命中',
-    description: '该非人类生物样例展示了多年后毛发、姿态与拍摄条件变化下的个体匹配能力。',
-    queryImage: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=900&q=80',
-    prediction: {
-      subjectId: 'NH-023',
-      score: '0.92',
-      stage: 'Late Stage',
-      year: '2019',
-      source: 'Brown Bear Dataset',
-      isCorrect: true,
-      message: '系统成功在不同年份的非人类生物图库中命中同一个体。'
-    },
+    domainLabel: '非人类生物',
+    source: '棕熊数据集',
+    queryYear: '2022',
+    stageLabel: '后期阶段',
+    expected: '同一身份应出现在 Top-3 中',
+    description: '一个后期阶段的非人类样本，具有明显外观漂移。',
+    queryImage:
+      'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=900&q=80',
     results: [
       {
-        image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-023',
+        id: 'NH-023',
         source: 'Brown Bear Dataset',
-        year: 2019,
-        score: '0.92',
-        isCorrect: true,
-        isCrossTime: true
+        year: '2019',
+        stage: 'Middle',
+        score: '0.93',
+        correct: true,
+        crossStage: true,
+        image:
+          'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=900&q=80'
       },
       {
-        image: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-041',
+        id: 'NH-051',
         source: 'Brown Bear Dataset',
-        year: 2020,
-        score: '0.81',
-        isCorrect: false,
-        isCrossTime: false
+        year: '2021',
+        stage: 'Later',
+        score: '0.86',
+        correct: false,
+        crossStage: false,
+        image:
+          'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=900&q=80'
       },
       {
-        image: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-017',
+        id: 'NH-023',
         source: 'Brown Bear Dataset',
-        year: 2018,
-        score: '0.76',
-        isCorrect: false,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-102',
-        source: 'Brown Bear Dataset',
-        year: 2021,
-        score: '0.72',
-        isCorrect: false,
-        isCrossTime: false
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-056',
-        source: 'Brown Bear Dataset',
-        year: 2017,
-        score: '0.69',
-        isCorrect: false,
-        isCrossTime: true
+        year: '2017',
+        stage: 'Early',
+        score: '0.84',
+        correct: true,
+        crossStage: true,
+        image:
+          'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=900&q=80'
       }
-    ]
-  },
-  {
-    id: 'nonhuman-2',
-    domain: 'nonhuman',
-    domainLabel: 'Non-human Biometric',
-    name: 'Case B · Large Mammal Subject 011',
-    subjectId: 'NH-011',
-    source: 'Large Mammal Dataset',
-    queryYear: 2021,
-    stageLabel: 'Middle Stage',
-    expected: 'Top-5 内稳定命中',
-    description: '该样例模拟大型哺乳类在遮挡、视角变化下的跨时间候选检索过程。',
-    queryImage: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=900&q=80',
-    prediction: {
-      subjectId: 'NH-011',
-      score: '0.87',
-      stage: 'Middle Stage',
-      year: '2018',
-      source: 'Large Mammal Dataset',
-      isCorrect: true,
-      message: '虽然存在遮挡与视角变化，系统仍在前列候选中返回正确个体。'
-    },
-    results: [
-      {
-        image: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-014',
-        source: 'Large Mammal Dataset',
-        year: 2020,
-        score: '0.88',
-        isCorrect: false,
-        isCrossTime: false
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1570288685369-f7305163d0e3?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-011',
-        source: 'Large Mammal Dataset',
-        year: 2018,
-        score: '0.87',
-        isCorrect: true,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-021',
-        source: 'Large Mammal Dataset',
-        year: 2021,
-        score: '0.79',
-        isCorrect: false,
-        isCrossTime: false
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-067',
-        source: 'Large Mammal Dataset',
-        year: 2017,
-        score: '0.74',
-        isCorrect: false,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'NH-045',
-        source: 'Large Mammal Dataset',
-        year: 2019,
-        score: '0.70',
-        isCorrect: false,
-        isCrossTime: true
-      }
-    ]
+    ],
+    summary: {
+      identity: 'NH-023',
+      stage: '后期阶段',
+      observation: '跨阶段一致性整体稳定。',
+      success: true,
+      message: '同一身份在多个时间点都保持了较高相似度。'
+    }
   }
 ]
 
 const humanCases = [
   {
-    id: 'human-1',
-    domain: 'human',
-    domainLabel: 'Human Transfer Validation',
-    name: 'Case C · Human Face Validation 008',
-    subjectId: 'H-008',
-    source: 'AgeDB',
-    queryYear: 2020,
-    stageLabel: 'Age Shift',
-    expected: '跨年龄阶段 Top-1 命中',
-    description: '该样例用于展示模型在人脸公开数据集上的迁移验证结果，强调跨时间泛化能力。',
-    queryImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80',
-    prediction: {
-      subjectId: 'H-008',
-      score: '0.91',
-      stage: 'Age Shift',
-      year: '2016',
-      source: 'AgeDB',
-      isCorrect: true,
-      message: '模型在人脸公开数据上同样能够保持较好的跨时间匹配效果。'
-    },
+    id: 'demo-hm-1',
+    name: '年龄验证样本 A',
+    subjectId: 'HM-014',
+    domainLabel: '人脸验证',
+    source: 'AgeDB / CACD',
+    queryYear: 'Stage C',
+    stageLabel: '后期阶段',
+    expected: '同一身份应保持在靠前位置',
+    description: '用于迁移验证的后期阶段人脸查询样本。',
+    queryImage:
+      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=80',
     results: [
       {
-        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-008',
+        id: 'HM-014',
         source: 'AgeDB',
-        year: 2016,
+        year: 'Stage B',
+        stage: 'Middle',
         score: '0.91',
-        isCorrect: true,
-        isCrossTime: true
+        correct: true,
+        crossStage: true,
+        image:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80'
       },
       {
-        image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-021',
-        source: 'AgeDB',
-        year: 2018,
+        id: 'HM-044',
+        source: 'CACD',
+        year: 'Stage C',
+        stage: 'Later',
         score: '0.82',
-        isCorrect: false,
-        isCrossTime: true
+        correct: false,
+        crossStage: false,
+        image:
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80'
       },
       {
-        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-046',
-        source: 'AgeDB',
-        year: 2020,
-        score: '0.77',
-        isCorrect: false,
-        isCrossTime: false
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-052',
-        source: 'AgeDB',
-        year: 2017,
-        score: '0.73',
-        isCorrect: false,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-031',
-        source: 'AgeDB',
-        year: 2019,
-        score: '0.69',
-        isCorrect: false,
-        isCrossTime: true
+        id: 'HM-014',
+        source: 'FG-NET',
+        year: 'Stage A',
+        stage: 'Earlier',
+        score: '0.80',
+        correct: true,
+        crossStage: true,
+        image:
+          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=900&q=80'
       }
-    ]
-  },
-  {
-    id: 'human-2',
-    domain: 'human',
-    domainLabel: 'Human Transfer Validation',
-    name: 'Case D · Human Face Validation 021',
-    subjectId: 'H-021',
-    source: 'CACD / FG-NET',
-    queryYear: 2019,
-    stageLabel: 'Temporal Shift',
-    expected: 'Top-5 内保持稳定',
-    description: '该样例模拟模型在人脸公开数据集上的跨时间迁移检索过程。',
-    queryImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
-    prediction: {
-      subjectId: 'H-021',
-      score: '0.86',
-      stage: 'Temporal Shift',
-      year: '2014',
-      source: 'CACD / FG-NET',
-      isCorrect: true,
-      message: '模型在人脸迁移验证集上保持了较稳定的识别表现。'
-    },
-    results: [
-      {
-        image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-018',
-        source: 'CACD / FG-NET',
-        year: 2018,
-        score: '0.87',
-        isCorrect: false,
-        isCrossTime: false
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-021',
-        source: 'CACD / FG-NET',
-        year: 2014,
-        score: '0.86',
-        isCorrect: true,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-041',
-        source: 'CACD / FG-NET',
-        year: 2016,
-        score: '0.79',
-        isCorrect: false,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-063',
-        source: 'CACD / FG-NET',
-        year: 2017,
-        score: '0.74',
-        isCorrect: false,
-        isCrossTime: true
-      },
-      {
-        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
-        subjectId: 'H-005',
-        source: 'CACD / FG-NET',
-        year: 2015,
-        score: '0.71',
-        isCorrect: false,
-        isCrossTime: true
-      }
-    ]
+    ],
+    summary: {
+      identity: 'HM-014',
+      stage: '后期阶段',
+      observation: '在年龄变化下，检索结果依然稳定。',
+      success: true,
+      message: '较早阶段与中期阶段样本仍然保持在前列结果中。'
+    }
   }
 ]
 
 const activeDomain = ref('nonhuman')
 const activeCaseId = ref(nonHumanCases[0].id)
-const isRunning = ref(false)
-const hasStarted = ref(false)
-const hasResult = ref(false)
-const topK = ref(5)
+const topK = ref(3)
+const hasRun = ref(false)
 
-const currentCaseList = computed(() => {
-  return activeDomain.value === 'nonhuman' ? nonHumanCases : humanCases
-})
-
-const currentCase = computed(() => {
-  return currentCaseList.value.find(item => item.id === activeCaseId.value) || currentCaseList.value[0]
-})
-
-const caseOptions = computed(() => {
-  return currentCaseList.value.map(item => ({
-    label: item.name,
-    value: item.id
-  }))
-})
-
-const visibleResults = computed(() => {
-  return currentCase.value.results.slice(0, topK.value)
-})
-
-const prediction = computed(() => {
-  if (!hasResult.value) return {}
-  return currentCase.value.prediction
-})
-
-const resetDemo = () => {
-  isRunning.value = false
-  hasStarted.value = false
-  hasResult.value = false
-}
+const cases = computed(() => (activeDomain.value === 'nonhuman' ? nonHumanCases : humanCases))
+const currentDomain = computed(() => domainMeta[activeDomain.value])
+const caseOptions = computed(() => cases.value.map((item) => ({ label: item.name, value: item.id })))
+const currentCase = computed(() => cases.value.find((item) => item.id === activeCaseId.value) || cases.value[0])
+const visibleResults = computed(() => currentCase.value.results.slice(0, topK.value))
+const summary = computed(() => currentCase.value.summary)
 
 const runDemo = () => {
-  hasStarted.value = true
-  hasResult.value = false
-  isRunning.value = true
-
-  setTimeout(() => {
-    isRunning.value = false
-    hasResult.value = true
-  }, 1200)
+  hasRun.value = true
 }
 
-watch(activeCaseId, () => {
-  resetDemo()
+watch(activeDomain, () => {
+  activeCaseId.value = cases.value[0].id
+  hasRun.value = false
 })
 
-watch(activeDomain, (domain) => {
-  activeCaseId.value = domain === 'nonhuman' ? nonHumanCases[0].id : humanCases[0].id
-  resetDemo()
+watch(activeCaseId, () => {
+  hasRun.value = false
 })
 </script>
 
 <style scoped>
+@import '@/styles/demo-glass.css';
+
 .system-scene {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.scene-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.scene-heading {
-  max-width: 760px;
-}
-
-.scene-eyebrow {
-  margin-bottom: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.scene-title {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.1;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.scene-desc {
-  margin: 10px 0 0;
-  max-width: 760px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: #64748b;
-}
-
-.scene-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.domain-switch {
-  width: fit-content;
-  min-width: 0;
-  flex: 0 0 auto;
-}
-
-.overview-grid {
+.overview-grid,
+.main-grid,
+.flow-row,
+.results-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
   gap: 20px;
 }
 
+.overview-grid {
+  grid-template-columns: 1.4fr 1fr;
+}
+
 .flow-row {
-  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-.flow-step {
+.main-grid {
+  grid-template-columns: 1.08fr 1.28fr 0.84fr;
+  align-items: start;
+}
+
+.flow-step,
+.highlight-copy,
+.query-panel,
+.sample-info-list,
+.side-column,
+.summary-main,
+.narration-copy {
   display: flex;
   flex-direction: column;
+}
+
+.highlight-copy,
+.query-panel,
+.sample-info-list,
+.side-column,
+.summary-main,
+.narration-copy {
+  gap: 12px;
+}
+
+.flow-step {
   gap: 10px;
   padding: 14px;
-  border: 1px solid #e2e8f0;
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: rgba(49, 71, 58, 0.84);
 }
 
 .flow-step span {
@@ -728,415 +360,182 @@ watch(activeDomain, (domain) => {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--demo-sage-badge-gradient);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 16px rgba(66, 96, 78, 0.14);
+  color: var(--demo-sage-ink-strong);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
-.highlight-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.highlight-point,
+.query-preview,
+.result-item,
+.summary-block,
+.judge-box {
+  padding: 14px;
+  border-radius: 18px;
 }
 
-.highlight-point {
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
+.query-image,
+.result-image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
   border-radius: 16px;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.main-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 1.45fr 0.8fr;
-  gap: 20px;
-  align-items: start;
-}
-
-.query-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.query-preview {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 22px;
-  background: #f8fafc;
 }
 
 .query-image {
-  width: 100%;
-  height: 280px;
-  display: block;
-  object-fit: cover;
+  aspect-ratio: 16 / 10;
 }
 
-.query-badges {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
+.result-image {
+  aspect-ratio: 1 / 1;
+}
+
+.query-badges,
+.result-year-row,
+.action-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 10px;
 }
 
-.tag {
+.tag,
+.mini-chip {
   display: inline-flex;
   align-items: center;
-  height: 30px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #334155;
+  background: rgba(255, 255, 255, 0.34);
+  color: var(--demo-sage-accent);
   font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(6px);
 }
 
 .tag-dark {
-  background: rgba(15, 23, 42, 0.9);
-  color: #ffffff;
+  background: var(--demo-sage-gradient);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 16px rgba(66, 96, 78, 0.14);
+  color: #fff;
 }
 
-.sample-title {
-  font-size: 18px;
+.sample-title,
+.result-id,
+.judge-title {
+  font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--demo-sage-ink-strong);
 }
 
-.sample-desc {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #64748b;
+.sample-desc,
+.empty-desc,
+.judge-desc,
+.narration-copy p {
+  line-height: 1.75;
+  color: var(--demo-sage-ink-soft);
 }
 
-.sample-info-list {
-  margin-top: 18px;
+.info-row,
+.score-line,
+.summary-block {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-row {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: #f8fafc;
 }
 
-.info-row span {
-  font-size: 13px;
-  color: #64748b;
+.info-row span,
+.score-line span,
+.summary-label,
+.result-source {
+  color: var(--demo-sage-ink-faint);
 }
 
-.info-row strong {
-  font-size: 13px;
-  color: #0f172a;
-  text-align: right;
-}
-
-.selector-wrap {
-  margin-top: 18px;
+.info-row strong,
+.score-line strong,
+.summary-block strong {
+  color: var(--demo-sage-ink-strong);
 }
 
 .selector-label {
-  margin-bottom: 8px;
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--demo-sage-ink-faint);
 }
 
 .sample-select {
   width: 100%;
 }
 
-.action-row {
-  margin-top: 18px;
-  display: flex;
-  gap: 12px;
-}
-
 .run-btn {
-  background: #0f172a;
-  border-color: #0f172a;
-}
-
-.run-btn:hover,
-.run-btn:focus {
-  background: #1e293b !important;
-  border-color: #1e293b !important;
+  min-width: 140px;
 }
 
 .empty-state,
-.loading-state {
-  min-height: 520px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  text-align: center;
+.summary-empty {
+  padding: 20px;
+  border-radius: 18px;
+  color: var(--demo-sage-ink-soft);
 }
 
-.empty-icon {
-  font-size: 40px;
-  color: #94a3b8;
-}
-
-.empty-title,
-.loading-title {
-  font-size: 18px;
+.empty-title {
+  font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
-}
-
-.empty-desc,
-.loading-desc {
-  max-width: 340px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #64748b;
+  color: var(--demo-sage-ink-strong);
+  margin-bottom: 6px;
 }
 
 .results-grid {
-  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
 }
 
 .result-item {
   position: relative;
-  padding: 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.result-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.06);
-}
-
-.result-item--correct {
-  border-color: #86efac;
-  background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
-}
-
-.result-item--cross {
-  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.08);
 }
 
 .result-rank {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
-}
-
-.result-image-wrap {
-  position: relative;
-  overflow: hidden;
-  border-radius: 16px;
-  background: #e2e8f0;
-}
-
-.result-image {
-  width: 100%;
-  height: 170px;
-  display: block;
-  object-fit: cover;
+  color: var(--demo-sage-ink-faint);
 }
 
 .result-corner {
   position: absolute;
   top: 10px;
   right: 10px;
-  height: 26px;
+  height: 28px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(6px);
 }
 
 .result-corner.success {
-  background: rgba(34, 197, 94, 0.16);
-  color: #166534;
-  border: 1px solid rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
 }
 
 .result-corner.neutral {
-  background: rgba(255, 255, 255, 0.88);
-  color: #475569;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-}
-
-.result-meta {
-  margin-top: 12px;
-}
-
-.result-id {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.result-source {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.result-year-row {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.mini-chip {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.score-line {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.score-line strong {
-  color: #0f172a;
-  font-size: 14px;
-}
-
-.side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.summary-empty {
-  min-height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-.summary-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.summary-main {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.summary-block {
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #f8fafc;
-}
-
-.summary-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.summary-block strong {
-  font-size: 15px;
-  color: #0f172a;
-}
-
-.judge-box {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.42);
+  color: var(--demo-sage-accent);
 }
 
 .judge-box.success {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.64), rgba(255, 255, 255, 0.24));
 }
 
-.judge-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.judge-desc {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #475569;
-}
-
-.narration-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
-  line-height: 1.8;
-  color: #475569;
-}
-
-.narration-copy p {
-  margin: 0;
-}
-
-@media (max-width: 1400px) {
-  .main-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .side-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 1100px) {
-  .overview-grid {
+@media (max-width: 1200px) {
+  .overview-grid,
+  .main-grid,
+  .results-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1146,43 +545,8 @@ watch(activeDomain, (domain) => {
 }
 
 @media (max-width: 768px) {
-  .scene-top {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .scene-title {
-    font-size: 24px;
-  }
-
-  .scene-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .domain-switch {
-    min-width: 0;
-  }
-
-  .results-grid,
-  .side-column {
-    grid-template-columns: 1fr;
-  }
-
   .flow-row {
     grid-template-columns: 1fr;
-  }
-
-  .action-row {
-    flex-direction: column;
-  }
-
-  .query-image {
-    height: 220px;
-  }
-
-  .result-image {
-    height: 180px;
   }
 }
 </style>

@@ -1,29 +1,26 @@
-<template>
+﻿<template>
   <div class="preprocess-scene">
     <div class="scene-top">
       <div class="scene-heading">
-        <div class="scene-eyebrow">Preprocess Pipeline</div>
+        <div class="scene-eyebrow">预处理流程</div>
         <h2 class="scene-title">面向跨时间识别的数据预处理流程</h2>
         <p class="scene-desc">
-          预处理阶段的目标不是简单清洗图像，而是围绕跨时间身份比对任务构建更稳定的输入样本。
-          通过区域定位、对齐裁剪、样本筛选、时间标签整理与阶段关系组织，
-          为后续识别模型提供更可靠的数据基础。
+          预处理阶段的目标不是简单清洗图像，而是围绕跨时间识别任务，构建更稳定、
+          更可用于建模的训练样本基础。
         </p>
       </div>
 
       <div class="scene-actions">
-        <a-segmented
-          v-model:value="activeStep"
-          :options="stepOptions"
-        />
+        <a-segmented v-model:value="activeStep" :options="stepOptions" />
       </div>
     </div>
 
     <div class="overview-grid">
       <BaseCard
         title="流程总览"
-        subtitle="从原始图像到可训练样本的关键环节"
+        subtitle="从原始采集到可用于时间建模的训练样本"
         padding="lg"
+        transparent
       >
         <div class="pipeline-row">
           <div
@@ -40,25 +37,22 @@
       </BaseCard>
 
       <BaseCard
-        title="这一阶段要解决什么"
-        subtitle="预处理为跨时间建模提供统一输入基础"
+        title="核心目标"
+        subtitle="预处理阶段需要先解决的问题"
         padding="lg"
+        transparent
       >
         <div class="goal-list">
-          <div class="goal-item">统一图像尺度与有效面部区域</div>
-          <div class="goal-item">减少模糊、遮挡和异常样本干扰</div>
-          <div class="goal-item">建立清晰的身份与时间阶段标签</div>
-          <div class="goal-item">为跨阶段关系建模准备可用样本结构</div>
+          <div class="goal-item">统一尺度、姿态与取景范围</div>
+          <div class="goal-item">去除低质量与低价值样本</div>
+          <div class="goal-item">补充身份与时间阶段标注</div>
+          <div class="goal-item">构建显式时间关系供后续训练</div>
         </div>
       </BaseCard>
     </div>
 
     <div class="detail-grid">
-      <BaseCard
-        title="当前步骤说明"
-        :subtitle="currentStep.subtitle"
-        padding="lg"
-      >
+      <BaseCard title="当前步骤" :subtitle="currentStep.subtitle" padding="lg" transparent>
         <div class="step-detail">
           <div class="step-header">
             <div class="step-index-badge">{{ currentStep.index }}</div>
@@ -68,16 +62,10 @@
             </div>
           </div>
 
-          <div class="step-description">
-            {{ currentStep.description }}
-          </div>
+          <div class="step-description">{{ currentStep.description }}</div>
 
           <div class="step-points">
-            <div
-              v-for="(point, idx) in currentStep.points"
-              :key="idx"
-              class="point-item"
-            >
+            <div v-for="(point, idx) in currentStep.points" :key="idx" class="point-item">
               <span>{{ idx + 1 }}</span>
               <div>{{ point }}</div>
             </div>
@@ -87,8 +75,9 @@
 
       <BaseCard
         title="示意图"
-        subtitle="当前步骤对图像与样本组织的影响"
+        subtitle="当前操作的处理前后效果"
         padding="lg"
+        transparent
       >
         <div class="visual-panel">
           <div class="visual-card">
@@ -110,46 +99,42 @@
 
     <div class="bottom-grid">
       <BaseCard
-        title="为什么这些步骤缺一不可"
-        subtitle="它们共同决定后续识别效果的上限"
+        title="为什么这些步骤重要"
+        subtitle="预处理在模型学习前先减少不稳定因素"
         padding="lg"
+        transparent
       >
         <div class="task-support-grid">
           <div class="support-card">
-            <span>身份结构稳定性</span>
-            <strong>减弱同期外观干扰</strong>
-            <p>通过定位、对齐与筛选，尽量让模型更多看到稳定的面部结构，而不是被背景、噪声或偶然外观变化干扰。</p>
+            <span>稳定结构</span>
+            <strong>减少对不稳定纹理特征的依赖</strong>
+            <p>检测与对齐让模型更多关注核心身份结构，而不是背景噪声和不一致取景。</p>
           </div>
 
           <div class="support-card">
-            <span>时间信息可用性</span>
-            <strong>让时间变化可被建模</strong>
-            <p>整理清晰的阶段标签后，模型才能区分“身份变化”与“时间变化”，避免把阶段差异误当作身份差异。</p>
+            <span>可用时间标签</span>
+            <strong>把时间漂移转化为可学习监督</strong>
+            <p>清晰的阶段信息帮助后续模块区分身份一致性与自然外观变化。</p>
           </div>
 
           <div class="support-card">
-            <span>跨阶段关系组织</span>
-            <strong>为一致性建模提供基础</strong>
-            <p>只有明确同一身份在不同阶段之间的样本关系，后续模型才有条件学习跨时间保持稳定的表征方式。</p>
+            <span>时间关系</span>
+            <strong>为跨时间训练准备配对依据</strong>
+            <p>相邻阶段之间的显式关联，构成了时间一致性建模所需的结构基础。</p>
           </div>
         </div>
       </BaseCard>
 
       <BaseCard
-        title="口播提示"
-        subtitle="适合录制演示视频时直接讲解"
+        title="讲解提示"
+        subtitle="适合答辩或录屏时口播"
         padding="lg"
+        transparent
       >
         <div class="narration-copy">
-          <p>
-            这一部分的重点不是普通意义上的图像预处理，而是围绕跨时间识别需求去构造训练样本。
-          </p>
-          <p>
-            我们既要保证输入图像在空间位置和结构上尽量一致，也要保证每张图像具备清晰的身份标签与时间阶段信息。
-          </p>
-          <p>
-            这样，后续模型才能在不同时间条件下学习更稳定的身份表示，而不是依赖某一个时期的外观特征。
-          </p>
+          <p>这一阶段并不只是图像清洗，而是专门面向跨时间识别设计的数据准备流程。</p>
+          <p>在模型训练之前，我们先统一结构、过滤噪声，并补充身份与阶段标注。</p>
+          <p>这样后续网络才能在更干净、更可靠的基础上学习稳定的时间身份表征。</p>
         </div>
       </BaseCard>
     </div>
@@ -164,16 +149,12 @@ const steps = [
   {
     key: 'detect',
     index: '01',
-    title: '面部区域定位',
-    subtitle: '先确定真正有效的识别区域',
-    purpose: '从原始图像中提取更可靠的面部区域，减少背景干扰。',
+    title: '目标检测',
+    subtitle: '先定位有效主体区域',
+    purpose: '从原始图像中提取有效识别区域。',
     description:
-      '在原始采集图像中，往往包含大量背景、取景偏移和无关区域。若直接输入模型，容易让特征学习偏离真正与身份相关的结构信息，因此需要先定位有效面部区域。',
-    points: [
-      '从原始图像中提取面部主体区域',
-      '减少背景和取景差异带来的干扰',
-      '为后续裁剪与对齐提供统一基础'
-    ],
+      '原始输入中往往包含过多背景和不一致取景。目标检测的作用，是先把注意力收敛到真正有用的身份区域。',
+    points: ['定位有效主体区域', '减少背景干扰', '为后续对齐提供稳定基础'],
     arrowText: '定位 / 裁剪',
     beforeImage:
       'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=900&q=80',
@@ -183,17 +164,13 @@ const steps = [
   {
     key: 'align',
     index: '02',
-    title: '对齐与裁剪',
+    title: '对齐归一',
     subtitle: '让不同阶段样本更具可比性',
-    purpose: '统一尺度与结构位置，减弱姿态和取景差异。',
+    purpose: '统一姿态、尺度与空间结构。',
     description:
-      '跨时间样本经常伴随拍摄距离、角度和取景范围变化。通过对齐与裁剪，可以尽量统一关键结构区域的位置关系，提升不同时期图像之间的可比性。',
-    points: [
-      '统一图像尺度与面部比例',
-      '减小姿态与视角变化影响',
-      '突出更稳定的结构区域'
-    ],
-    arrowText: '对齐 / 归一化',
+      '跨时间样本在角度、距离和构图上常有较大差异。对齐归一能显著降低这些几何偏差。',
+    points: ['统一尺度与区域比例', '减少视角差异', '突出更稳定的结构特征'],
+    arrowText: '对齐 / 归一',
     beforeImage:
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80',
     afterImage:
@@ -202,17 +179,13 @@ const steps = [
   {
     key: 'clean',
     index: '03',
-    title: '样本清洗与筛选',
-    subtitle: '控制异常样本对训练的破坏',
-    purpose: '提升样本质量，降低噪声对识别建模的影响。',
+    title: '样本筛选',
+    subtitle: '控制噪声样本影响',
+    purpose: '在训练前提升样本质量。',
     description:
-      '模糊、遮挡、极端光照和低分辨率样本会显著破坏表征学习效果。在跨时间任务中，这类噪声还容易被误认为是时间变化本身，因此需要进行有针对性的样本筛选。',
-    points: [
-      '剔除严重模糊和低分辨率图像',
-      '过滤极端遮挡与结构缺失样本',
-      '减小异常样本对跨时间建模的扰动'
-    ],
-    arrowText: '清洗 / 筛选',
+      '模糊、遮挡和低分辨率样本会破坏时间学习效果。筛选的目的，就是去除这些不稳定监督。',
+    points: ['剔除严重模糊样本', '去除严重遮挡情况', '减少训练中的噪声证据'],
+    arrowText: '筛选 / 清洗',
     beforeImage:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
     afterImage:
@@ -221,17 +194,13 @@ const steps = [
   {
     key: 'label',
     index: '04',
-    title: '身份与阶段标签整理',
-    subtitle: '让时间信息进入训练过程',
-    purpose: '为每个样本建立身份标签与时间阶段信息。',
+    title: '标注整理',
+    subtitle: '补充身份与阶段信息',
+    purpose: '构建身份与时间的显式监督。',
     description:
-      '跨时间识别的难点之一在于：同一身份会随着时间发生变化。为了让模型区分“身份是谁”和“当前处于哪个阶段”，必须在数据层面建立清晰的身份标签与时间阶段标签。',
-    points: [
-      '为每张图像建立唯一身份标识',
-      '为样本标注对应时间阶段',
-      '统一标签组织形式，支撑后续训练'
-    ],
-    arrowText: '标签整理',
+      '跨时间识别不仅要知道“是谁”，还要知道“属于哪个阶段”。标注整理就是把这种监督显式化。',
+    points: ['赋予稳定身份标签', '标记时间阶段', '保持标注结构统一'],
+    arrowText: '标注 / 整理',
     beforeImage:
       'https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=900&q=80',
     afterImage:
@@ -240,17 +209,13 @@ const steps = [
   {
     key: 'pair',
     index: '05',
-    title: '跨阶段关系组织',
-    subtitle: '显式建立相邻阶段之间的联系',
-    purpose: '为模型学习跨时间稳定性提供数据关系基础。',
+    title: '时间配对',
+    subtitle: '将相邻阶段连接成可学习关系',
+    purpose: '构建显式时间关联供模型学习。',
     description:
-      '仅有单张样本还不够，跨时间识别还需要让模型看到“同一身份在不同阶段之间如何变化”。因此需要构造相邻时间阶段之间的样本关系，显式组织这些阶段联系。',
-    points: [
-      '组织同一身份在相邻阶段之间的样本关系',
-      '突出“身份不变、阶段变化”的训练结构',
-      '为后续跨时间稳定性建模提供依据'
-    ],
-    arrowText: '阶段组织',
+      '单张图像不足以支持时间推理。跨阶段配对可以给网络提供身份如何演化的直接证据。',
+    points: ['连接同一身份的不同阶段', '让模型在变化中看到稳定身份', '支持后续一致性建模'],
+    arrowText: '配对 / 组织',
     beforeImage:
       'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=900&q=80',
     afterImage:
@@ -259,70 +224,35 @@ const steps = [
 ]
 
 const activeStep = ref('detect')
-
-const currentStep = computed(() => {
-  return steps.find(item => item.key === activeStep.value) || steps[0]
-})
-
-const stepOptions = steps.map(item => ({
+const currentStep = computed(() => steps.find((item) => item.key === activeStep.value) || steps[0])
+const stepOptions = steps.map((item) => ({
   label: item.title,
   value: item.key
 }))
 </script>
 
 <style scoped>
+@import '@/styles/demo-glass.css';
+
 .preprocess-scene {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.scene-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.scene-heading {
-  max-width: 780px;
-}
-
-.scene-eyebrow {
-  margin-bottom: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.scene-title {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.1;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.scene-desc {
-  margin: 10px 0 0;
-  max-width: 760px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: #64748b;
-}
-
-.scene-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.overview-grid,
+.detail-grid,
+.bottom-grid {
+  display: grid;
+  gap: 20px;
 }
 
 .overview-grid {
-  display: grid;
   grid-template-columns: 1.35fr 0.95fr;
-  gap: 20px;
+}
+
+.detail-grid {
+  grid-template-columns: 1.05fr 0.95fr;
 }
 
 .pipeline-row {
@@ -336,285 +266,173 @@ const stepOptions = steps.map(item => ({
   flex-direction: column;
   gap: 10px;
   padding: 14px;
-  border: 1px solid #e2e8f0;
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.pipeline-step:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.05);
 }
 
 .pipeline-step.active {
-  border-color: #0f172a;
-  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 0 0 1px rgba(217, 235, 220, 0.24),
+    0 0 18px rgba(150, 182, 159, 0.12),
+    0 12px 24px rgba(66, 96, 78, 0.08);
 }
 
-.pipeline-step span {
+.pipeline-step span,
+.step-index-badge {
   width: 30px;
   height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--demo-sage-badge-gradient);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 16px rgba(66, 96, 78, 0.14);
+  color: var(--demo-sage-ink-strong);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
-.pipeline-step strong {
-  font-size: 13px;
-  line-height: 1.5;
-  color: #0f172a;
-}
-
-.goal-list {
+.goal-list,
+.task-support-grid,
+.narration-copy,
+.step-detail,
+.step-points {
   display: flex;
   flex-direction: column;
+}
+
+.goal-list,
+.task-support-grid,
+.step-detail,
+.step-points {
   gap: 12px;
 }
 
-.goal-item {
+.goal-item,
+.support-card,
+.point-item,
+.visual-card {
   padding: 14px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #f8fafc;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 20px;
-}
-
-.step-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  border-radius: 18px;
 }
 
 .step-header {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-
-.step-index-badge {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: #0f172a;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
+  gap: 14px;
 }
 
-.step-header-copy {
-  min-width: 0;
+.step-header-copy,
+.support-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .step-name {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--demo-sage-ink-strong);
 }
 
-.step-purpose {
-  margin-top: 4px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #64748b;
-}
-
-.step-description {
-  font-size: 13px;
-  line-height: 1.8;
-  color: #475569;
-}
-
-.step-points {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.step-purpose,
+.step-description,
+.support-card p,
+.narration-copy p {
+  line-height: 1.75;
+  color: var(--demo-sage-ink-soft);
 }
 
 .point-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 1fr;
   gap: 12px;
-  padding: 13px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #f8fafc;
 }
 
 .point-item span {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #0f172a;
-  color: #ffffff;
-  font-size: 11px;
+  background: rgba(188, 211, 193, 0.22);
+  color: var(--demo-sage-accent);
+  font-size: 12px;
   font-weight: 700;
-  flex-shrink: 0;
-}
-
-.point-item div {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #334155;
 }
 
 .visual-panel {
   display: grid;
-  grid-template-columns: 1fr 88px 1fr;
-  gap: 14px;
+  grid-template-columns: 1fr 96px 1fr;
+  gap: 16px;
   align-items: center;
 }
 
-.visual-card {
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-}
-
 .visual-label {
-  padding: 12px 14px 0;
+  margin-bottom: 10px;
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--demo-sage-ink-faint);
 }
 
 .visual-card img {
   width: 100%;
-  height: 280px;
   display: block;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
-  padding: 12px;
-  box-sizing: border-box;
-  border-radius: 22px;
+  border-radius: 16px;
 }
 
 .visual-arrow {
-  height: 54px;
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed #cbd5e1;
-  border-radius: 16px;
-  background: #f8fafc;
-  color: #64748b;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28));
+  color: var(--demo-sage-accent);
   font-size: 12px;
   font-weight: 700;
 }
 
-.bottom-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 20px;
-}
-
-.task-support-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.support-card {
-  padding: 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-}
-
 .support-card span {
-  display: block;
   font-size: 12px;
-  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(96, 126, 108, 0.68);
 }
 
 .support-card strong {
-  display: block;
-  margin-top: 6px;
   font-size: 15px;
-  line-height: 1.5;
-  color: #0f172a;
+  color: var(--demo-sage-ink-strong);
 }
 
-.support-card p {
-  margin: 8px 0 0;
-  font-size: 13px;
-  line-height: 1.8;
-  color: #64748b;
-}
-
-.narration-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
-  line-height: 1.8;
-  color: #475569;
-}
-
-.narration-copy p {
-  margin: 0;
-}
-
-@media (max-width: 1280px) {
+@media (max-width: 1200px) {
   .overview-grid,
-  .detail-grid,
-  .bottom-grid {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 
   .pipeline-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .task-support-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .scene-top {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .scene-title {
-    font-size: 24px;
-  }
-
-  .pipeline-row {
-    grid-template-columns: 1fr 1fr;
-  }
-
+  .pipeline-row,
   .visual-panel {
     grid-template-columns: 1fr;
   }
 
   .visual-arrow {
-    height: 44px;
-  }
-
-  .visual-card img {
-    height: 220px;
+    min-height: 48px;
+    border-radius: 16px;
   }
 }
 </style>

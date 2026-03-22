@@ -90,10 +90,13 @@ const bodyStyle = computed(() => {
 
 <style scoped>
 .base-card {
-  border: 1px solid rgba(226, 232, 240, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.46);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.24));
+  backdrop-filter: blur(20px) saturate(128%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 16px 32px var(--demo-sage-shadow, rgba(66, 96, 78, 0.08));
   transition:
     transform 0.22s ease,
     box-shadow 0.22s ease,
@@ -103,14 +106,16 @@ const bodyStyle = computed(() => {
 }
 
 .base-card--transparent {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.16));
+  backdrop-filter: blur(22px) saturate(130%);
 }
 
 .base-card--hoverable:hover {
   transform: translateY(-2px);
-  border-color: #dbe4ee;
-  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+  border-color: var(--demo-sage-line-strong, rgba(197, 219, 200, 0.42));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 18px 36px rgba(66, 96, 78, 0.11);
 }
 
 .base-card--dense {
@@ -121,6 +126,7 @@ const bodyStyle = computed(() => {
   min-height: auto;
   padding: 18px 20px 0;
   border-bottom: none;
+  background: transparent;
 }
 
 :deep(.ant-card-head-title) {
@@ -159,20 +165,20 @@ const bodyStyle = computed(() => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--demo-sage-ink-faint, rgba(96, 126, 108, 0.74));
 }
 
 .card-title {
   font-size: 16px;
   line-height: 1.25;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--demo-sage-ink-strong, #24352b);
 }
 
 .card-subtitle {
   font-size: 13px;
   line-height: 1.45;
-  color: #64748b;
+  color: var(--demo-sage-ink-soft, rgba(59, 85, 69, 0.78));
 }
 
 .card-content {
