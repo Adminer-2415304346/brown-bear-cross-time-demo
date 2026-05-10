@@ -30,7 +30,7 @@ defineProps({
   border-radius: 22px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .metric-card__label {
@@ -40,8 +40,8 @@ defineProps({
 }
 
 .metric-card__value {
-  margin-top: 18px;
-  min-height: 44px;
+  margin-top: 12px;
+  min-height: 0;
   display: flex;
   align-items: flex-end;
   font-size: 48px;
@@ -52,7 +52,7 @@ defineProps({
 }
 
 .metric-card__extra {
-  margin-top: 18px;
+  margin-top: 10px;
   font-size: 12px;
   line-height: 1.35;
   color: var(--demo-text-2);
